@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from "react";
+import React, { useState } from "react";
 
 import { useRouter } from "next/router";
 
@@ -13,7 +13,6 @@ import useUserIssueNotificationSubscription from "hooks/use-issue-notification-s
 import useEstimateOption from "hooks/use-estimate-option";
 // services
 import issuesService from "services/issues.service";
-import modulesService from "services/modules.service";
 // contexts
 import { useProjectMyMembership } from "contexts/project-member.context";
 // components
@@ -46,13 +45,13 @@ import {
   UserIcon,
   RectangleGroupIcon,
 } from "@heroicons/react/24/outline";
+import { ContrastIcon } from "components/icons";
 // helpers
 import { copyTextToClipboard } from "helpers/string.helper";
 // types
-import type { ICycle, IIssue, IIssueLink, linkDetails, IModule } from "types";
+import type { IIssue, IIssueLink, linkDetails } from "types";
 // fetch-keys
 import { ISSUE_DETAILS } from "constants/fetch-keys";
-import { ContrastIcon } from "components/icons";
 
 type Props = {
   control: any;
@@ -105,48 +104,6 @@ export const IssueDetailsSidebar: React.FC<Props> = ({
   const { memberRole } = useProjectMyMembership();
 
   const { setToastAlert } = useToast();
-
-  const handleCycleChange = useCallback(
-    (cycleDetails: ICycle) => {
-      if (!workspaceSlug || !projectId || !issueDetail) return;
-
-      issuesService
-        .addIssueToCycle(
-          workspaceSlug as string,
-          projectId as string,
-          cycleDetails.id,
-          {
-            issues: [issueDetail.id],
-          },
-          user
-        )
-        .then((res) => {
-          mutate(ISSUE_DETAILS(issueId as string));
-        });
-    },
-    [workspaceSlug, projectId, issueId, issueDetail, user]
-  );
-
-  const handleModuleChange = useCallback(
-    (moduleDetail: IModule) => {
-      if (!workspaceSlug || !projectId || !issueDetail) return;
-
-      modulesService
-        .addIssuesToModule(
-          workspaceSlug as string,
-          projectId as string,
-          moduleDetail.id,
-          {
-            issues: [issueDetail.id],
-          },
-          user
-        )
-        .then((res) => {
-          mutate(ISSUE_DETAILS(issueId as string));
-        });
-    },
-    [workspaceSlug, projectId, issueId, issueDetail, user]
-  );
 
   const handleCreateLink = async (formData: IIssueLink) => {
     if (!workspaceSlug || !projectId || !issueDetail) return;
@@ -347,12 +304,12 @@ export const IssueDetailsSidebar: React.FC<Props> = ({
             {showFirstSection && (
               <div className="py-1">
                 {(fieldsToShow.includes("all") || fieldsToShow.includes("state")) && (
-                  <div className="flex flex-wrap items-center py-2">
-                    <div className="flex items-center gap-x-2 text-sm text-custom-text-200 sm:basis-1/2">
+                  <div className="flex items-center py-2">
+                    <div className="flex items-center gap-x-2 text-sm text-custom-text-200 sm:w-1/2">
                       <Squares2X2Icon className="h-4 w-4 flex-shrink-0" />
                       <p>State</p>
                     </div>
-                    <div className="sm:basis-1/2">
+                    <div className="sm:w-1/2">
                       <Controller
                         control={control}
                         name="state"
@@ -543,10 +500,9 @@ export const IssueDetailsSidebar: React.FC<Props> = ({
                       <ContrastIcon className="h-4 w-4 flex-shrink-0" />
                       <p>Cycle</p>
                     </div>
-                    <div className="space-y-1 sm:w-1/2">
+                    <div className="sm:w-1/2">
                       <SidebarCycleSelect
-                        issueDetail={issueDetail}
-                        handleCycleChange={handleCycleChange}
+                        issueDetails={issueDetail}
                         disabled={memberRole.isGuest || memberRole.isViewer || uneditable}
                       />
                     </div>
@@ -558,10 +514,9 @@ export const IssueDetailsSidebar: React.FC<Props> = ({
                       <RectangleGroupIcon className="h-4 w-4 flex-shrink-0" />
                       <p>Module</p>
                     </div>
-                    <div className="space-y-1 sm:w-1/2">
+                    <div className="sm:w-1/2">
                       <SidebarModuleSelect
-                        issueDetail={issueDetail}
-                        handleModuleChange={handleModuleChange}
+                        issueDetails={issueDetail}
                         disabled={memberRole.isGuest || memberRole.isViewer || uneditable}
                       />
                     </div>

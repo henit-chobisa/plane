@@ -6,6 +6,8 @@ import useSWR, { mutate } from "swr";
 
 // services
 import modulesService from "services/modules.service";
+// hooks
+import useUser from "hooks/use-user";
 // ui
 import { Spinner, CustomSelect, Tooltip } from "components/ui";
 // helper
@@ -16,18 +18,15 @@ import { IIssue, IModule } from "types";
 import { ISSUE_DETAILS, MODULE_ISSUES, MODULE_LIST } from "constants/fetch-keys";
 
 type Props = {
-  issueDetail: IIssue | undefined;
-  handleModuleChange: (module: IModule) => void;
+  issueDetails: IIssue | undefined;
   disabled?: boolean;
 };
 
-export const SidebarModuleSelect: React.FC<Props> = ({
-  issueDetail,
-  handleModuleChange,
-  disabled = false,
-}) => {
+export const SidebarModuleSelect: React.FC<Props> = ({ issueDetails, disabled = false }) => {
   const router = useRouter();
-  const { workspaceSlug, projectId, issueId } = router.query;
+  const { workspaceSlug, projectId } = router.query;
+
+  const { user } = useUser();
 
   const { data: modules } = useSWR(
     workspaceSlug && projectId ? MODULE_LIST(projectId as string) : null,
@@ -36,13 +35,31 @@ export const SidebarModuleSelect: React.FC<Props> = ({
       : null
   );
 
+  const handleModuleChange = (moduleDetail: IModule) => {
+    if (!workspaceSlug || !projectId || !issueDetails) return;
+
+    modulesService
+      .addIssuesToModule(
+        workspaceSlug as string,
+        projectId as string,
+        moduleDetail.id,
+        {
+          issues: [issueDetails.id],
+        },
+        user
+      )
+      .then((res) => {
+        mutate(ISSUE_DETAILS(issueDetails.id));
+      });
+  };
+
   const removeIssueFromModule = (bridgeId: string, moduleId: string) => {
-    if (!workspaceSlug || !projectId) return;
+    if (!workspaceSlug || !projectId || !issueDetails) return;
 
     modulesService
       .removeIssueFromModule(workspaceSlug as string, projectId as string, moduleId, bridgeId)
       .then((res) => {
-        mutate(ISSUE_DETAILS(issueId as string));
+        mutate(ISSUE_DETAILS(issueDetails.id));
 
         mutate(MODULE_ISSUES(moduleId));
       })
@@ -51,12 +68,12 @@ export const SidebarModuleSelect: React.FC<Props> = ({
       });
   };
 
-  const issueModule = issueDetail?.issue_module;
+  const issueModule = issueDetails?.issue_module;
 
   return (
     <CustomSelect
       customButton={
-        <div>
+        <div className="inline-block w-full">
           <Tooltip
             position="left"
             tooltipContent={`${

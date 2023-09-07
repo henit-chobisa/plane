@@ -1,25 +1,27 @@
-// mobx
-import { observer } from "mobx-react-lite";
 // headless ui
 import { Disclosure } from "@headlessui/react";
-import { getStateGroupIcon } from "components/icons";
 // hooks
 import useToast from "hooks/use-toast";
-import useUser from "hooks/use-user";
 // components
 import {
   SidebarAssigneeSelect,
+  SidebarCycleSelect,
   SidebarEstimateSelect,
+  SidebarModuleSelect,
   SidebarPrioritySelect,
   SidebarStateSelect,
   TPeekOverviewModes,
 } from "components/issues";
 // ui
 import { CustomDatePicker, Icon } from "components/ui";
+// icons
+import { RectangleGroupIcon } from "@heroicons/react/24/outline";
+import { ContrastIcon, getStateGroupIcon } from "components/icons";
 // helpers
 import { copyTextToClipboard } from "helpers/string.helper";
 // types
 import { IIssue } from "types";
+import useEstimateOption from "hooks/use-estimate-option";
 
 type Props = {
   handleDeleteIssue: () => void;
@@ -39,6 +41,8 @@ export const PeekOverviewIssueProperties: React.FC<Props> = ({
   workspaceSlug,
 }) => {
   const { setToastAlert } = useToast();
+
+  const { isEstimateActive } = useEstimateOption();
 
   const startDate = issue.start_date;
   const targetDate = issue.target_date;
@@ -159,20 +163,7 @@ export const PeekOverviewIssueProperties: React.FC<Props> = ({
             />
           </div>
         </div>
-        {/* <div className="flex items-center gap-2 text-sm">
-          <div className="flex-shrink-0 w-1/4 flex items-center gap-2 font-medium">
-            <Icon iconName="change_history" className="!text-base flex-shrink-0" />
-            <span className="flex-grow truncate">Estimate</span>
-          </div>
-          <div className="w-3/4">
-            <SidebarEstimateSelect
-              value={issue.estimate_point}
-              onChange={(val: number | null) =>handleUpdateIssue({ estimate_point: val })}
-              disabled={readOnly}
-            />
-          </div>
-        </div> */}
-        {/* <Disclosure as="div">
+        <Disclosure as="div">
           {({ open }) => (
             <>
               <Disclosure.Button
@@ -184,11 +175,45 @@ export const PeekOverviewIssueProperties: React.FC<Props> = ({
                 <Icon iconName={open ? "expand_less" : "expand_more"} className="!text-base" />
               </Disclosure.Button>
               <Disclosure.Panel as="div" className="mt-4 space-y-4">
-                Disclosure Panel
+                {isEstimateActive && (
+                  <div className="flex items-center gap-2 text-sm">
+                    <div className="flex-shrink-0 w-1/4 flex items-center gap-2 font-medium">
+                      <Icon iconName="change_history" className="!text-base flex-shrink-0" />
+                      <span className="flex-grow truncate">Estimate</span>
+                    </div>
+                    <div className="w-3/4">
+                      <SidebarEstimateSelect
+                        value={issue.estimate_point}
+                        onChange={(val: number | null) =>
+                          handleUpdateIssue({ estimate_point: val })
+                        }
+                        disabled={readOnly}
+                      />
+                    </div>
+                  </div>
+                )}
+                <div className="flex items-center gap-2 text-sm">
+                  <div className="flex-shrink-0 w-1/4 flex items-center gap-2 font-medium">
+                    <ContrastIcon className="h-4 w-4 flex-shrink-0" />
+                    <span className="flex-grow truncate">Cycle</span>
+                  </div>
+                  <div className="w-3/4">
+                    <SidebarCycleSelect issueDetails={issue} disabled={readOnly} />
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <div className="flex-shrink-0 w-1/4 flex items-center gap-2 font-medium">
+                    <RectangleGroupIcon className="h-4 w-4 flex-shrink-0" />
+                    <span className="flex-grow truncate">Module</span>
+                  </div>
+                  <div className="w-3/4">
+                    <SidebarModuleSelect issueDetails={issue} disabled={readOnly} />
+                  </div>
+                </div>
               </Disclosure.Panel>
             </>
           )}
-        </Disclosure> */}
+        </Disclosure>
       </div>
     </div>
   );

@@ -22,11 +22,11 @@ export const SidebarEstimateSelect: React.FC<Props> = ({ value, onChange, disabl
       customButton={
         <button
           type="button"
-          className="flex items-center gap-1.5 !text-sm bg-custom-background-80 rounded px-2.5 py-0.5"
+          className="flex items-center gap-1.5 !text-xs bg-custom-background-80 rounded px-2.5 py-0.5"
         >
           <PlayIcon
             className={`h-4 w-4 -rotate-90 ${
-              value !== null ? "text-custom-text-100" : "text-custom-text-200"
+              value ? "text-custom-text-100" : "text-custom-text-200"
             }`}
           />
           {estimatePoints?.find((e) => e.key === value)?.value ?? "No estimate"}
