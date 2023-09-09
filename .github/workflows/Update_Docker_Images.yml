@@ -2,7 +2,7 @@ name: Update Docker Images for Plane on Release
 
 on:
   release:
-    types: [released, prereleased]
+    types: [released, prereleased, edited]
   workflow_dispatch:
     inputs:
       tag:
