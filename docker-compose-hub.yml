@@ -36,7 +36,7 @@ x-api-and-worker-env:
 services:
         plane-web:
                 container_name: planefrontend
-                image: makeplane/plane-frontend:latest
+                image: henit0885/plane-frontend:latest
                 restart: always
                 command: /usr/local/bin/start.sh web/server.js web
                 env_file:
@@ -58,7 +58,7 @@ services:
 
         plane-deploy:
                 container_name: planedeploy
-                image: makeplane/plane-deploy:latest
+                image: henit0885/plane-deploy:latest
                 restart: always
                 command: /usr/local/bin/start.sh space/server.js space
                 env_file:
@@ -72,9 +72,11 @@ services:
 
         plane-api:
                 container_name: planebackend
-                image: makeplane/plane-backend:latest
+                image: henit0885/plane-backend:latest
                 restart: always
                 command: ./bin/takeoff
+                ports:
+                        - 8000:8000
                 env_file:
                         - .env
                 environment:
@@ -85,7 +87,7 @@ services:
 
         plane-worker:
                 container_name: planebgworker
-                image: makeplane/plane-worker:latest
+                image: henit0885/plane-backend:latest
                 restart: always
                 command: ./bin/worker
                 env_file:
@@ -99,7 +101,7 @@ services:
 
         plane-beat-worker:
                 container_name: planebeatworker
-                image: makeplane/plane-worker:latest
+                image: henit0885/plane-backend:latest
                 restart: always
                 command: ./bin/beat
                 env_file:
@@ -159,7 +161,7 @@ services:
         # Comment this if you already have a reverse proxy running
         plane-proxy:
                 container_name: planeproxy
-                image: makeplane/plane-proxy:latest
+                image: henit0885/plane-proxy:latest
                 ports:
                         - ${NGINX_PORT}:80
                 env_file:
