@@ -3,6 +3,11 @@ name: Update Docker Images for Plane on Release
 on:
   release:
     types: [released, prereleased]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag for the Images'
+        required: true
 
 jobs:
   build_push_backend:
