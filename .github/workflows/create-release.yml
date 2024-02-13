@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       release_tag:
-        description: 'Release Tag (e.g., v0.16-cannary-1)'
+        description: 'Release Tag (e.g., v0.16-cannary-1, v0.16-cannary-2)'
         required: true
 
 permissions:
