@@ -27,7 +27,7 @@ jobs:
       - name: Generate Release Notes
         id: generate_notes
         run: |
-          RELEASE_NOTES=$(git log $(git describe --tags --abbrev=0)..HEAD --pretty=format:"- ([%h](https://github.com/${{ github.repository }}/commit/%H)) %s")
+          RELEASE_NOTES=$(git log $(git describe --tags --abbrev=0)..HEAD --pretty=format:"- %s by %an in [%h](https://github.com/${{ github.repository }}/commit/%H)")
           RELEASE_NOTES_TRUNCATED=$(echo "$RELEASE_NOTES" | head -c 10000)
           echo "RELEASE_NOTES<<EOF" >> $GITHUB_ENV
           echo "$RELEASE_NOTES_TRUNCATED" >> $GITHUB_ENV
