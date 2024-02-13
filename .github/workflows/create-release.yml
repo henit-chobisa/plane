@@ -29,7 +29,7 @@ jobs:
         run: |
           echo 'Release Notes:' > RELEASE_NOTES.md
           git log $(git describe --tags --abbrev=0)..HEAD --pretty=format:"- [%h](https://github.com/${{ github.repository }}/commit/%H) %s" >> RELEASE_NOTES.md
-          RELEASE_NOTES="## What's Changed\n $(<RELEASE_NOTES.md)"
+          RELEASE_NOTES=" $(<RELEASE_NOTES.md)"
           echo "RELEASE_NOTES<<EOF" >> $GITHUB_ENV
           echo "$RELEASE_NOTES" >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
