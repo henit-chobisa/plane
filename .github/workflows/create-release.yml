@@ -30,7 +30,7 @@ jobs:
           echo '## What Changed' > RELEASE_NOTES.md
           git log $(git describe --tags --abbrev=0)..HEAD --pretty=format:"- %s by [%an]() in [%h](https://github.com/${{ github.repository }}/commit/%H)" >> RELEASE_NOTES.md
           RELEASE_NOTES=" $(<RELEASE_NOTES.md)"
-          RELEASE_NOTES_TRUNCATED=$(echo "$RELEASE_NOTES" | head -c 100000)
+          RELEASE_NOTES_TRUNCATED=$(echo "$RELEASE_NOTES" | head -c 30000)
           echo "RELEASE_NOTES<<EOF" >> $GITHUB_ENV
           echo "$RELEASE_NOTES_TRUNCATED" >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
