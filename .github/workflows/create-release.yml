@@ -25,9 +25,13 @@ jobs:
           git config user.email "github-actions@github.com"
 
       - name: Generate Release Notes
+        id: generate_notes
         run: |
-          echo 'Release Notes:' > RELEASE_NOTES.md
-          git log $(git describe --tags --abbrev=0)..HEAD --pretty=format:"- [%h](https://github.com/${{ github.repository }}/commit/%H) %s" >> RELEASE_NOTES.md
+          RELEASE_NOTES=$(git log $(git describe --tags --abbrev=0)..HEAD --pretty=format:"- [%h](https://github.com/${{ github.repository }}/commit/%H) %s")
+          RELEASE_NOTES_TRUNCATED=$(echo "$RELEASE_NOTES" | head -c 10000)
+          echo "RELEASE_NOTES<<EOF" >> $GITHUB_ENV
+          echo "$RELEASE_NOTES_TRUNCATED" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
 
       - name: Create Tag
         run: |
@@ -39,9 +43,10 @@ jobs:
         with:
           tag_name: ${{ github.event.inputs.release_tag }}
           name: ${{ github.event.inputs.release_tag }}
-          body_path: RELEASE_NOTES.md
+          body: ${{ env.RELEASE_NOTES }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
 
 
 
