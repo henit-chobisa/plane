@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       release_tag:
-        description: 'Release Tag (e.g., v0.16-cannary-1, v0.16-cannary-2)'
+        description: 'Release Tag (e.g., v0.16-cannary-1)'
         required: true
 
 permissions:
@@ -17,21 +17,22 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
         with:
-          fetch-depth: 0  # Necessary to fetch all history for tags
+          fetch-depth: 0  # Fetch all history for tags and branches
 
       - name: Set up Git
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
 
-      - name: Get Latest Tag
-        run: echo "LATEST_TAG=$(git describe --tags --abbrev=0)" >> $GITHUB_ENV
-
       - name: Generate Release Notes
         run: |
-          echo 'Release Notes:' > RELEASE_NOTES.md
+          LATEST_TAG=$(git describe --tags --abbrev=0)
+          echo "Release Notes since $LATEST_TAG" > RELEASE_NOTES.md
           git log ${LATEST_TAG}..HEAD --pretty=format:"- [%h](https://github.com/${{ github.repository }}/commit/%H) %s" >> RELEASE_NOTES.md
-          echo "RELEASE_NOTES=$(cat RELEASE_NOTES.md)" >> $GITHUB_ENV
+          RELEASE_NOTES=$(cat RELEASE_NOTES.md)
+          echo "RELEASE_NOTES<<EOF" >> $GITHUB_ENV
+          echo "$RELEASE_NOTES" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
 
       - name: Create Tag
         run: |
@@ -39,10 +40,13 @@ jobs:
           git push origin ${{ github.event.inputs.release_tag }}
 
       - name: Create GitHub Release
-        uses: ncipollo/release-action@v1
-        with:
-          tag: ${{ github.event.inputs.release_tag }}
-          token: ${{ secrets.GITHUB_TOKEN }}
-          bodyFile: RELEASE_NOTES.md
-          prerelease: true
+        run: |
+          gh release create ${{ github.event.inputs.release_tag }} \
+            --repo ${{ github.repository }} \
+            --title "${{ github.event.inputs.release_tag }}" \
+            --notes-file RELEASE_NOTES.md \
+            --draft false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
 
