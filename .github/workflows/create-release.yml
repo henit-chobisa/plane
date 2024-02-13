@@ -32,7 +32,6 @@ jobs:
               ref: 'refs/tags/${{ github.event.inputs.release_tag }}',
               sha: context.sha
             })
-            github_token: ${{ secrets.GITHUB_TOKEN }}
         
       - name: Create GitHub Release
         uses: ncipollo/release-action@v1
