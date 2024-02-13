@@ -39,3 +39,4 @@ jobs:
           tag: ${{ github.event.inputs.release_tag }}
           token: ${{ secrets.GITHUB_TOKEN }}
           generateReleaseNotes: true
+          prerelease: true
