@@ -47,3 +47,4 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           bodyFile: RELEASE_NOTES.md
           generateReleaseNotes: true
+          prerelease: true
