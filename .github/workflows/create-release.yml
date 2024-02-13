@@ -1,0 +1,42 @@
+name: Manual Release Workflow
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: 'Release Tag (e.g., v0.16-cannary-1)'
+        required: true
+
+permissions:
+  contents: write
+  
+jobs:
+  create-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      
+      - name: Set up Git
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+
+      - name: Create Tag
+        uses: actions/github-script@v6
+        with:
+          script: |
+            github.rest.git.createRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: 'refs/tags/${{ github.event.inputs.release_tag }}',
+              sha: context.sha
+            })
+            github_token: ${{ secrets.GITHUB_TOKEN }}
+        
+      - name: Create GitHub Release
+        uses: ncipollo/release-action@v1
+        with:
+          tag: ${{ github.event.inputs.release_tag }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          generateReleaseNotes: true
