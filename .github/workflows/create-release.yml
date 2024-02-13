@@ -25,15 +25,13 @@ jobs:
           git config user.email "github-actions@github.com"
 
       - name: Get Latest Tag
-        id: latest_tag
-        run: echo "::set-output name=tag::$(git describe --tags --abbrev=0)"
+        run: echo "LATEST_TAG=$(git describe --tags --abbrev=0)" >> $GITHUB_ENV
 
       - name: Generate Release Notes
-        id: release_notes
         run: |
           echo 'Release Notes:' > RELEASE_NOTES.md
-          git log ${{ steps.latest_tag.outputs.tag }}..HEAD --pretty=format:"- %s" >> RELEASE_NOTES.md
-          echo "::set-output name=notes::$(cat RELEASE_NOTES.md)"
+          git log ${LATEST_TAG}..HEAD --pretty=format:"- [%h](https://github.com/${{ github.repository }}/commit/%H) %s" >> RELEASE_NOTES.md
+          echo "RELEASE_NOTES=$(cat RELEASE_NOTES.md)" >> $GITHUB_ENV
 
       - name: Create Tag
         run: |
@@ -46,5 +44,5 @@ jobs:
           tag: ${{ github.event.inputs.release_tag }}
           token: ${{ secrets.GITHUB_TOKEN }}
           bodyFile: RELEASE_NOTES.md
-          generateReleaseNotes: true
           prerelease: true
+
