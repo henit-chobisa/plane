@@ -9,34 +9,42 @@ on:
 
 permissions:
   contents: write
-  
+
 jobs:
   create-release:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-      
+        with:
+          fetch-depth: 0  # Necessary to fetch all history for tags
+
       - name: Set up Git
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
 
+      - name: Get Latest Tag
+        id: latest_tag
+        run: echo "::set-output name=tag::$(git describe --tags --abbrev=0)"
+
+      - name: Generate Release Notes
+        id: release_notes
+        run: |
+          echo 'Release Notes:' > RELEASE_NOTES.md
+          git log ${{ steps.latest_tag.outputs.tag }}..HEAD --pretty=format:"- %s" >> RELEASE_NOTES.md
+          echo "::set-output name=notes::$(cat RELEASE_NOTES.md)"
+
       - name: Create Tag
-        uses: actions/github-script@v6
-        with:
-          script: |
-            github.rest.git.createRef({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              ref: 'refs/tags/${{ github.event.inputs.release_tag }}',
-              sha: context.sha
-            })
-        
+        run: |
+          git tag ${{ github.event.inputs.release_tag }}
+          git push origin ${{ github.event.inputs.release_tag }}
+
       - name: Create GitHub Release
-        uses: ncipollo/release-action@v1
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag: ${{ github.event.inputs.release_tag }}
-          token: ${{ secrets.GITHUB_TOKEN }}
-          generateReleaseNotes: true
-          prerelease: true
+          tag_name: ${{ github.event.inputs.release_tag }}
+          release_name: ${{ github.event.inputs.release_tag }}
+          body_path: RELEASE_NOTES.md
