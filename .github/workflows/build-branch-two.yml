@@ -8,17 +8,17 @@ on:
 
 jobs:
   build-pull-request-contents:
-    name: Build Pull Request Contents
+    name: Build Pull Request Content
     runs-on: ubuntu-20.04
 
     steps:
       - name: Checkout Repository to Actions
-        uses: actions/checkout@v3.3.0
+        uses: actions/checkout@v4
         with:
           token: ${{ secrets.ACCESS_TOKEN }}
 
       - name: Setup Node.js 18.x
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v4
         with:
           node-version: 18.x
 
