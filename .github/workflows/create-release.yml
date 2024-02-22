@@ -27,7 +27,7 @@ jobs:
       - name: Generate Release Notes
         id: generate_notes
         run: |
-          sh ./generate_release_notes.sh
+          bash ./generate_release_notes.sh
           echo "::set-output name=release_notes::$(cat RELEASE_NOTES.md | sed ':a;N;$!ba;s/\n/%0A/g')"
 
           
