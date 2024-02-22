@@ -28,22 +28,27 @@ jobs:
         id: generate_notes
         run: |
           bash ./generate_release_notes.sh
-          echo "::set-output name=release_notes::$(cat RELEASE_NOTES.md | sed ':a;N;$!ba;s/\n/%0A/g')"
+          # Directly use the content of RELEASE_NOTES.md for the release body
+          RELEASE_NOTES=$(cat RELEASE_NOTES.md)
+          echo "RELEASE_NOTES<<EOF" >> $GITHUB_ENV
+          echo "$RELEASE_NOTES" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
 
-          
       - name: Create Tag
         run: |
           git tag ${{ github.event.inputs.release_tag }}
           git push origin ${{ github.event.inputs.release_tag }}
 
       - name: Create GitHub Release
-        uses: ncipollo/release-action@v1
+        uses: softprops/action-gh-release@v1
         with:
-          tag: ${{ github.event.inputs.release_tag }}
-          token: ${{ secrets.GITHUB_TOKEN }}
-          bodyFile: "./RELEASE_NOTES.md"
+          tag_name: ${{ github.event.inputs.release_tag }}
+          body_path: RELEASE_NOTES.md
+          draft: false
           prerelease: true
-          generateReleaseNotes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
 
 
 
