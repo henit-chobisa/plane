@@ -33,12 +33,14 @@ for commit in $COMMITS; do
   if echo "$normalized_message" | grep -qE '^(merge|chore)'; then
     continue
   fi
-  if ! echo "$commit_message" | grep -qE '#[0-9]+'; then
-    continue
+  
+  # Extract PR number if present
+  PR_NUMBER=$(echo $commit_message | grep -o -E "#[0-9]+" || echo "")
+  if [[ -z "$PR_NUMBER" ]]; then
+    continue  # Skip commits without a PR number
   fi
   
-  # Extract PR number if present and format the commit message
-  PR_NUMBER=$(echo $commit_message | grep -o -E "#\d+" || echo "")
+  # Format the commit message
   CLEAN_MESSAGE=$(echo $commit_message | sed -E "s/#[0-9]+//; s/^(feat|refactor|fix|chore): //I; s/^([Ff]eat|[Rr]efactor|[Ff]ix|[Cc]hore) //I; s/^\[.*\] //; s/[:\-] / /; s/\(\) //")
   CLEAN_MESSAGE="$(tr '[:lower:]' '[:upper:]' <<< ${CLEAN_MESSAGE:0:1})${CLEAN_MESSAGE:1}."
   CLEAN_MESSAGE=$(echo $CLEAN_MESSAGE | sed 's/()//g') # Remove empty brackets
@@ -74,6 +76,8 @@ IFS=$OLD_IFS
 rm "$IMPROVEMENTS_FILE" "$BUGS_FILE" "$OTHERS_FILE"
 
 echo "Release notes generated in RELEASE_NOTES.md"
+
+
 
 
 
