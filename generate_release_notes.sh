@@ -44,13 +44,13 @@ for commit in $COMMITS; do
   
   # Categorize and limit the number of commits under each heading
   if [[ $IMPROVEMENTS_COUNT -lt 30 && ($normalized_message =~ ^feat|^refactor) ]]; then
-    IMPROVEMENTS+="- $CLEAN_MESSAGE $PR_NUMBER\n"
+    IMPROVEMENTS+="$CLEAN_MESSAGE $PR_NUMBER\n"
     ((IMPROVEMENTS_COUNT++))
   elif [[ $BUGS_COUNT -lt 30 && $normalized_message =~ ^fix ]]; then
-    BUGS+="- $CLEAN_MESSAGE $PR_NUMBER\n"
+    BUGS+="$CLEAN_MESSAGE $PR_NUMBER\n"
     ((BUGS_COUNT++))
   elif [[ $OTHERS_COUNT -lt 30 ]]; then
-    OTHERS+="- $CLEAN_MESSAGE $PR_NUMBER\n"
+    OTHERS+="$CLEAN_MESSAGE $PR_NUMBER\n"
     ((OTHERS_COUNT++))
   fi
 done
@@ -59,15 +59,26 @@ done
 IFS=$OLD_IFS
 
 # Generate the release notes
-{
-  echo '## What Changed'
-  [[ ! -z "$IMPROVEMENTS" ]] && echo "## Improvements"
-  [[ ! -z "$IMPROVEMENTS" ]] && echo $IMPROVEMENTS
-  [[ ! -z "$BUGS" ]] && echo "## Bugs"
-  [[ ! -z "$BUGS" ]] && echo $BUGS
-  [[ ! -z "$OTHERS" ]] && echo "## Others"
-  [[ ! -z "$OTHERS" ]] && echo $OTHERS
-} > RELEASE_NOTES.md
+echo '## What Changed' > RELEASE_NOTES.md
+if [[ ! -z "$IMPROVEMENTS" ]]; then
+  echo "## Improvements" >> RELEASE_NOTES.md
+  while IFS= read -r line; do
+    echo "$line" >> RELEASE_NOTES.md
+  done <<< "$IMPROVEMENTS"
+fi
+if [[ ! -z "$BUGS" ]]; then
+  echo "## Bugs" >> RELEASE_NOTES.md
+  while IFS= read -r line; do
+    echo "$line" >> RELEASE_NOTES.md
+  done <<< "$BUGS"
+fi
+if [[ ! -z "$OTHERS" ]]; then
+  echo "## Others" >> RELEASE_NOTES.md
+  while IFS= read -r line; do
+    echo "$line" >> RELEASE_NOTES.md
+  done <<< "$OTHERS"
+fi
 
 echo "Release notes generated in RELEASE_NOTES.md"
+
 
