@@ -61,9 +61,12 @@ IFS=$OLD_IFS
 # Generate the release notes
 {
   echo '## What Changed'
-  [[ ! -z "$IMPROVEMENTS" ]] && echo "## Improvements\n$IMPROVEMENTS"
-  [[ ! -z "$BUGS" ]] && echo "## Bugs\n$BUGS"
-  [[ ! -z "$OTHERS" ]] && echo "## Others\n$OTHERS"
+  [[ ! -z "$IMPROVEMENTS" ]] && echo "## Improvements"
+  [[ ! -z "$IMPROVEMENTS" ]] && echo $IMPROVEMENTS
+  [[ ! -z "$BUGS" ]] && echo "## Bugs"
+  [[ ! -z "$BUGS" ]] && echo $BUGS
+  [[ ! -z "$OTHERS" ]] && echo "## Others"
+  [[ ! -z "$OTHERS" ]] && echo $OTHERS
 } > RELEASE_NOTES.md
 
 echo "Release notes generated in RELEASE_NOTES.md"
