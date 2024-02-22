@@ -26,13 +26,10 @@ jobs:
 
       - name: Generate Release Notes
         id: generate_notes
-        run: sh ./generate_release_notes.sh
-
-      - name: Load RELEASE_NOTES.md into GITHUB_ENV
         run: |
-          echo "RELEASE_NOTES<<EOF" >> $GITHUB_ENV
-          cat RELEASE_NOTES.md >> $GITHUB_ENV
-          echo "EOF" >> $GITHUB_ENV
+          sh ./generate_release_notes.sh
+          echo "::set-output name=release_notes::$(cat RELEASE_NOTES.md | sed ':a;N;$!ba;s/\n/%0A/g')"
+
           
       - name: Create Tag
         run: |
@@ -44,7 +41,7 @@ jobs:
         with:
           tag: ${{ github.event.inputs.release_tag }}
           token: ${{ secrets.GITHUB_TOKEN }}
-          body: ${{ env.RELEASE_NOTES  }}
+          body: ${{ steps.generate_notes.outputs.release_notes }}
           prerelease: true
           generateReleaseNotes: true
 
