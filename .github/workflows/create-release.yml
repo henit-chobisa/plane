@@ -27,7 +27,6 @@ jobs:
       - name: Generate Release Notes
         id: generate_notes
         run: |
-          # Initialize variables
           IMPROVEMENTS=""
           BUGS=""
           OTHERS=""
@@ -36,7 +35,6 @@ jobs:
           OTHERS_COUNT=0
 
           if git describe --tags --abbrev=0 > /dev/null 2>&1; then
-
             COMMITS=$(git log $(git describe --tags --abbrev=0)..HEAD --pretty=format:"%s|%h")
           else
             COMMITS=$(git log --pretty=format:"%s|%h")
