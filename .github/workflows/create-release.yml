@@ -27,47 +27,60 @@ jobs:
       - name: Generate Release Notes
         id: generate_notes
         run: |
+          # Initialize variables
           IMPROVEMENTS=""
           BUGS=""
           OTHERS=""
-          AUTHORS=()
+          IMPROVEMENTS_COUNT=0
+          BUGS_COUNT=0
+          OTHERS_COUNT=0
 
-          # Fetch all commits from the last tag to HEAD
-          COMMITS=$(git log $(git describe --tags --abbrev=0)..HEAD --pretty=format:"%s|%an|%h")
+          if git describe --tags --abbrev=0 > /dev/null 2>&1; then
 
-          # Loop through each commit to categorize
-          echo "$COMMITS" | while IFS="|" read -r commit_message author hash; do
-            PR_NUMBER=$(echo $commit_message | grep -o -E "\(#\d+\)" || echo "")
-            CLEAN_MESSAGE=$(echo $commit_message | sed -E "s/^(feat|refactor|fix): //; s/^(Feat|Refactor|Fix): //; s/^([Ff]eat|[Rr]efactor|[Ff]ix) //; s/^\[.*\] //; s/[:\-] / /" | tr '[:lower:]' '[:upper:]')
-          if [[ $commit_message == feat:* || $commit_message == refactor:* ]]; then
-            IMPROVEMENTS+="- $PR_NUMBER $CLEAN_MESSAGE by [$author](https://github.com/${{ github.repository }}/commit/$hash)\n"
-          elif [[ $commit_message == fix:* ]]; then
-            BUGS+="- $PR_NUMBER $CLEAN_MESSAGE by [$author](https://github.com/${{ github.repository }}/commit/$hash)\n"
+            COMMITS=$(git log $(git describe --tags --abbrev=0)..HEAD --pretty=format:"%s|%h")
           else
-            OTHERS+="- $PR_NUMBER $CLEAN_MESSAGE by [$author](https://github.com/${{ github.repository }}/commit/$hash)\n"
+            COMMITS=$(git log --pretty=format:"%s|%h")
           fi
-          AUTHORS+=("$author")
+          
+          OLD_IFS=$IFS
+          IFS=$'\n'
+
+          for commit in $COMMITS; do
+            IFS="|" read -r commit_message hash <<< "$commit"
+            normalized_message=$(echo "$commit_message" | tr '[:upper:]' '[:lower:]')
+            if echo "$normalized_message" | grep -qE '^(merge|chore)'; then
+              continue
+            fi
+            if ! echo "$commit_message" | grep -qE '#[0-9]+'; then
+              continue
+            fi
+            PR_NUMBER=$(echo $commit_message | grep -o -E "#\d+" || echo "")
+            CLEAN_MESSAGE=$(echo $commit_message | sed -E "s/#[0-9]+//; s/^(feat|refactor|fix|chore): //I; s/^([Ff]eat|[Rr]efactor|[Ff]ix|[Cc]hore) //I; s/^\[.*\] //; s/[:\-] / /; s/\(\) //")
+            CLEAN_MESSAGE="$(tr '[:lower:]' '[:upper:]' <<< ${CLEAN_MESSAGE:0:1})${CLEAN_MESSAGE:1}."
+            CLEAN_MESSAGE=$(echo $CLEAN_MESSAGE | sed 's/()//g') # Remove empty brackets
+            if [[ $IMPROVEMENTS_COUNT -lt 30 && ($normalized_message =~ ^feat|^refactor) ]]; then
+              IMPROVEMENTS+="- $CLEAN_MESSAGE $PR_NUMBER\n"
+              ((IMPROVEMENTS_COUNT++))
+            elif [[ $BUGS_COUNT -lt 30 && $normalized_message =~ ^fix ]]; then
+              BUGS+="- $CLEAN_MESSAGE $PR_NUMBER\n"
+              ((BUGS_COUNT++))
+            elif [[ $OTHERS_COUNT -lt 30 ]]; then
+              OTHERS+="- $CLEAN_MESSAGE $PR_NUMBER\n"
+              ((OTHERS_COUNT++))
+            fi
           done
-
-          # Remove duplicate authors
-          AUTHORS=($(echo "${AUTHORS[@]}" | tr ' ' '\n' | sort -u | tr '\n' ' '))
-
-          # Generate the release notes
+          IFS=$OLD_IFS
           {
             echo '## What Changed'
-            [[ ! -z "$IMPROVEMENTS" ]] && echo -e "## Improvements\n$IMPROVEMENTS"
-            [[ ! -z "$BUGS" ]] && echo -e "## Bugs\n$BUGS"
+            [[ ! -z "$IMPROVEMENTS" ]] && echo "## Improvements\n$IMPROVEMENTS"
+            [[ ! -z "$BUGS" ]] && echo "## Bugs\n$BUGS"
             [[ ! -z "$OTHERS" ]] && echo -e "## Others\n$OTHERS"
-            echo -e "\nThanks to all our contributors - @${AUTHORS[*]// /, @}."
           } > RELEASE_NOTES.md
 
-          # Truncate to 30000 characters if necessary and add to GITHUB_ENV
-          RELEASE_NOTES=" $(<RELEASE_NOTES.md)"
-          RELEASE_NOTES_TRUNCATED=$(echo "$RELEASE_NOTES" | head -c 30000)
           echo "RELEASE_NOTES<<EOF" >> $GITHUB_ENV
-          echo "$RELEASE_NOTES_TRUNCATED" >> $GITHUB_ENV
+          cat RELEASE_NOTES.md >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
-
+          
       - name: Create Tag
         run: |
           git tag ${{ github.event.inputs.release_tag }}
