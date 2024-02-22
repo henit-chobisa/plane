@@ -27,8 +27,41 @@ jobs:
       - name: Generate Release Notes
         id: generate_notes
         run: |
-          echo '## What Changed' > RELEASE_NOTES.md
-          git log $(git describe --tags --abbrev=0)..HEAD --pretty=format:"- %s by [%an]() in [%h](https://github.com/${{ github.repository }}/commit/%H)" >> RELEASE_NOTES.md
+          IMPROVEMENTS=""
+          BUGS=""
+          OTHERS=""
+          AUTHORS=()
+
+          # Fetch all commits from the last tag to HEAD
+          COMMITS=$(git log $(git describe --tags --abbrev=0)..HEAD --pretty=format:"%s|%an|%h")
+
+          # Loop through each commit to categorize
+          echo "$COMMITS" | while IFS="|" read -r commit_message author hash; do
+            PR_NUMBER=$(echo $commit_message | grep -o -E "\(#\d+\)" || echo "")
+            CLEAN_MESSAGE=$(echo $commit_message | sed -E "s/^(feat|refactor|fix): //; s/^(Feat|Refactor|Fix): //; s/^([Ff]eat|[Rr]efactor|[Ff]ix) //; s/^\[.*\] //; s/[:\-] / /" | tr '[:lower:]' '[:upper:]')
+          if [[ $commit_message == feat:* || $commit_message == refactor:* ]]; then
+            IMPROVEMENTS+="- $PR_NUMBER $CLEAN_MESSAGE by [$author](https://github.com/${{ github.repository }}/commit/$hash)\n"
+          elif [[ $commit_message == fix:* ]]; then
+            BUGS+="- $PR_NUMBER $CLEAN_MESSAGE by [$author](https://github.com/${{ github.repository }}/commit/$hash)\n"
+          else
+            OTHERS+="- $PR_NUMBER $CLEAN_MESSAGE by [$author](https://github.com/${{ github.repository }}/commit/$hash)\n"
+          fi
+          AUTHORS+=("$author")
+          done
+
+          # Remove duplicate authors
+          AUTHORS=($(echo "${AUTHORS[@]}" | tr ' ' '\n' | sort -u | tr '\n' ' '))
+
+          # Generate the release notes
+          {
+            echo '## What Changed'
+            [[ ! -z "$IMPROVEMENTS" ]] && echo -e "## Improvements\n$IMPROVEMENTS"
+            [[ ! -z "$BUGS" ]] && echo -e "## Bugs\n$BUGS"
+            [[ ! -z "$OTHERS" ]] && echo -e "## Others\n$OTHERS"
+            echo -e "\nThanks to all our contributors - @${AUTHORS[*]// /, @}."
+          } > RELEASE_NOTES.md
+
+          # Truncate to 30000 characters if necessary and add to GITHUB_ENV
           RELEASE_NOTES=" $(<RELEASE_NOTES.md)"
           RELEASE_NOTES_TRUNCATED=$(echo "$RELEASE_NOTES" | head -c 30000)
           echo "RELEASE_NOTES<<EOF" >> $GITHUB_ENV
