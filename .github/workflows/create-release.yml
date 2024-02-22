@@ -56,6 +56,7 @@ jobs:
             CLEAN_MESSAGE=$(echo $commit_message | sed -E "s/#[0-9]+//; s/^(feat|refactor|fix|chore): //I; s/^([Ff]eat|[Rr]efactor|[Ff]ix|[Cc]hore) //I; s/^\[.*\] //; s/[:\-] / /; s/\(\) //")
             CLEAN_MESSAGE="$(tr '[:lower:]' '[:upper:]' <<< ${CLEAN_MESSAGE:0:1})${CLEAN_MESSAGE:1}."
             CLEAN_MESSAGE=$(echo $CLEAN_MESSAGE | sed 's/()//g') # Remove empty brackets
+            
             if [[ $IMPROVEMENTS_COUNT -lt 30 && ($normalized_message =~ ^feat|^refactor) ]]; then
               IMPROVEMENTS+="- $CLEAN_MESSAGE $PR_NUMBER\n"
               ((IMPROVEMENTS_COUNT++))
@@ -66,7 +67,9 @@ jobs:
               OTHERS+="- $CLEAN_MESSAGE $PR_NUMBER\n"
               ((OTHERS_COUNT++))
             fi
+            
           done
+          
           IFS=$OLD_IFS
           {
             echo '## What Changed'
@@ -75,7 +78,6 @@ jobs:
             [[ ! -z "$OTHERS" ]] && echo -e "## Others\n$OTHERS"
           } > RELEASE_NOTES.md
 
-          echo "RELEASE_NOTES<<EOF" >> $GITHUB_ENV
           cat RELEASE_NOTES.md >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
           
