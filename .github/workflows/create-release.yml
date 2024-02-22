@@ -44,7 +44,7 @@ jobs:
         with:
           tag: ${{ github.event.inputs.release_tag }}
           token: ${{ secrets.GITHUB_TOKEN }}
-          body: cat RELEASE_NOTES.md
+          body: ${{ env.RELEASE_NOTES  }}
           prerelease: true
           generateReleaseNotes: true
 
