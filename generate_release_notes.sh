@@ -1,10 +1,12 @@
 #!/bin/bash
 
 # Initialize temporary files for each category
+FEATURES_FILE=$(mktemp)
 IMPROVEMENTS_FILE=$(mktemp)
 BUGS_FILE=$(mktemp)
 OTHERS_FILE=$(mktemp)
 
+FEATURES_COUNT=0
 IMPROVEMENTS_COUNT=0
 BUGS_COUNT=0
 OTHERS_COUNT=0
@@ -46,7 +48,10 @@ for commit in $COMMITS; do
   CLEAN_MESSAGE=$(echo $CLEAN_MESSAGE | sed 's/()//g') # Remove empty brackets
   
   # Categorize and limit the number of commits under each heading
-  if [[ $IMPROVEMENTS_COUNT -lt 30 && ($normalized_message =~ ^feat|^refactor) ]]; then
+  if [[ $FEATURES_COUNT -lt 30 && $normalized_message =~ ^feat ]]; then
+    echo "- $CLEAN_MESSAGE $PR_NUMBER" >> "$FEATURES_FILE"
+    ((FEATURES_COUNT++))
+  elif [[ $IMPROVEMENTS_COUNT -lt 30 && $normalized_message =~ ^refactor ]]; then
     echo "- $CLEAN_MESSAGE $PR_NUMBER" >> "$IMPROVEMENTS_FILE"
     ((IMPROVEMENTS_COUNT++))
   elif [[ $BUGS_COUNT -lt 30 && $normalized_message =~ ^fix ]]; then
@@ -63,7 +68,9 @@ IFS=$OLD_IFS
 
 # Generate the release notes by concatenating the temporary files
 {
-  echo '## What Changed' 
+  echo '## What Changed'
+  echo "## Features"
+  cat "$FEATURES_FILE"
   echo "## Improvements"
   cat "$IMPROVEMENTS_FILE"
   echo "## Bugs"
@@ -73,9 +80,10 @@ IFS=$OLD_IFS
 } > RELEASE_NOTES.md
 
 # Clean up temporary files
-rm "$IMPROVEMENTS_FILE" "$BUGS_FILE" "$OTHERS_FILE"
+rm "$FEATURES_FILE" "$IMPROVEMENTS_FILE" "$BUGS_FILE" "$OTHERS_FILE"
 
 echo "Release notes generated in RELEASE_NOTES.md"
+v
 
 
 
