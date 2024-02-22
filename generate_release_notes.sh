@@ -83,7 +83,6 @@ IFS=$OLD_IFS
 rm "$FEATURES_FILE" "$IMPROVEMENTS_FILE" "$BUGS_FILE" "$OTHERS_FILE"
 
 echo "Release notes generated in RELEASE_NOTES.md"
-v
 
 
 
