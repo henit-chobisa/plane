@@ -70,6 +70,7 @@ if [[ ! -z "$BUGS" ]]; then
   echo "## Bugs" >> RELEASE_NOTES.md
   while IFS= read -r line; do
     echo $line
+    echo 123
     echo $line >> RELEASE_NOTES.md
   done <<< "$BUGS"
 fi
