@@ -63,19 +63,20 @@ echo '## What Changed' > RELEASE_NOTES.md
 if [[ ! -z "$IMPROVEMENTS" ]]; then
   echo "## Improvements" >> RELEASE_NOTES.md
   while IFS= read -r line; do
-    echo "$line" >> RELEASE_NOTES.md
+    echo $line >> RELEASE_NOTES.md
   done <<< "$IMPROVEMENTS"
 fi
 if [[ ! -z "$BUGS" ]]; then
   echo "## Bugs" >> RELEASE_NOTES.md
   while IFS= read -r line; do
-    echo "$line" >> RELEASE_NOTES.md
+    echo $line
+    echo $line >> RELEASE_NOTES.md
   done <<< "$BUGS"
 fi
 if [[ ! -z "$OTHERS" ]]; then
   echo "## Others" >> RELEASE_NOTES.md
   while IFS= read -r line; do
-    echo "$line" >> RELEASE_NOTES.md
+    echo $line >> RELEASE_NOTES.md
   done <<< "$OTHERS"
 fi
 
