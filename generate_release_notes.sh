@@ -1,9 +1,10 @@
 #!/bin/bash
 
-# Initialize variables
-IMPROVEMENTS=""
-BUGS=""
-OTHERS=""
+# Initialize temporary files for each category
+IMPROVEMENTS_FILE=$(mktemp)
+BUGS_FILE=$(mktemp)
+OTHERS_FILE=$(mktemp)
+
 IMPROVEMENTS_COUNT=0
 BUGS_COUNT=0
 OTHERS_COUNT=0
@@ -44,13 +45,13 @@ for commit in $COMMITS; do
   
   # Categorize and limit the number of commits under each heading
   if [[ $IMPROVEMENTS_COUNT -lt 30 && ($normalized_message =~ ^feat|^refactor) ]]; then
-    IMPROVEMENTS+="$CLEAN_MESSAGE $PR_NUMBER \n "
+    echo "- $CLEAN_MESSAGE $PR_NUMBER" >> "$IMPROVEMENTS_FILE"
     ((IMPROVEMENTS_COUNT++))
   elif [[ $BUGS_COUNT -lt 30 && $normalized_message =~ ^fix ]]; then
-    BUGS+="$CLEAN_MESSAGE $PR_NUMBER \n "
+    echo "- $CLEAN_MESSAGE $PR_NUMBER" >> "$BUGS_FILE"
     ((BUGS_COUNT++))
   elif [[ $OTHERS_COUNT -lt 30 ]]; then
-    OTHERS+="$CLEAN_MESSAGE $PR_NUMBER \n "
+    echo "- $CLEAN_MESSAGE $PR_NUMBER" >> "$OTHERS_FILE"
     ((OTHERS_COUNT++))
   fi
 done
@@ -58,29 +59,21 @@ done
 # Restore IFS
 IFS=$OLD_IFS
 
-# Generate the release notes
-echo '## What Changed' > RELEASE_NOTES.md
-if [[ ! -z "$IMPROVEMENTS" ]]; then
-  echo "## Improvements" >> RELEASE_NOTES.md
-  while IFS= read -r line; do
-    echo $line >> RELEASE_NOTES.md
-  done <<< "$IMPROVEMENTS"
-fi
-if [[ ! -z "$BUGS" ]]; then
-  echo "## Bugs" >> RELEASE_NOTES.md
-  while IFS= read -r line; do
-    echo $line
-    echo 123
-    echo $line >> RELEASE_NOTES.md
-  done <<< "$BUGS"
-fi
-if [[ ! -z "$OTHERS" ]]; then
-  echo "## Others" >> RELEASE_NOTES.md
-  while IFS= read -r line; do
-    echo $line >> RELEASE_NOTES.md
-  done <<< "$OTHERS"
-fi
+# Generate the release notes by concatenating the temporary files
+{
+  echo '## What Changed' 
+  echo "## Improvements"
+  cat "$IMPROVEMENTS_FILE"
+  echo "## Bugs"
+  cat "$BUGS_FILE"
+  echo "## Others"
+  cat "$OTHERS_FILE"
+} > RELEASE_NOTES.md
+
+# Clean up temporary files
+rm "$IMPROVEMENTS_FILE" "$BUGS_FILE" "$OTHERS_FILE"
 
 echo "Release notes generated in RELEASE_NOTES.md"
+
 
 
