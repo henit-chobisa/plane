@@ -44,13 +44,13 @@ for commit in $COMMITS; do
   
   # Categorize and limit the number of commits under each heading
   if [[ $IMPROVEMENTS_COUNT -lt 30 && ($normalized_message =~ ^feat|^refactor) ]]; then
-    IMPROVEMENTS+="$CLEAN_MESSAGE $PR_NUMBER\n"
+    IMPROVEMENTS+="$CLEAN_MESSAGE $PR_NUMBER \n "
     ((IMPROVEMENTS_COUNT++))
   elif [[ $BUGS_COUNT -lt 30 && $normalized_message =~ ^fix ]]; then
-    BUGS+="$CLEAN_MESSAGE $PR_NUMBER\n"
+    BUGS+="$CLEAN_MESSAGE $PR_NUMBER \n "
     ((BUGS_COUNT++))
   elif [[ $OTHERS_COUNT -lt 30 ]]; then
-    OTHERS+="$CLEAN_MESSAGE $PR_NUMBER\n"
+    OTHERS+="$CLEAN_MESSAGE $PR_NUMBER \n "
     ((OTHERS_COUNT++))
   fi
 done
