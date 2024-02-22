@@ -41,7 +41,7 @@ jobs:
         with:
           tag: ${{ github.event.inputs.release_tag }}
           token: ${{ secrets.GITHUB_TOKEN }}
-          body: ${{ steps.generate_notes.outputs.release_notes }}
+          bodyFile: "./RELEASE_NOTES.md"
           prerelease: true
           generateReleaseNotes: true
 
