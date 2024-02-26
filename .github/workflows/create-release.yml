@@ -7,12 +7,12 @@ on:
         description: 'Release Tag (e.g., v0.16-cannary-1)'
         required: true
       prerelease:
-        description: 'Check this to create the release as prerelease'
+        description: 'Pre-Release'
         required: true
         default: true
         type: boolean
       draft:
-        description: 'Mark this to create the release as draft'
+        description: 'Draft'
         required: true
         default: true
         type: boolean
