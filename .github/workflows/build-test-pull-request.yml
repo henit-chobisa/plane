@@ -40,7 +40,7 @@ jobs:
       - name: Install Apiserver Dependencies
         run: cd apiserver && pip install -r requirements.txt
       - name: Lint apiserver
-        run: cd ../ && pylint --load-plugins pylint_django apiserver
+        run: pylint --load-plugins pylint_django apiserver
 
   lint-web:
     needs: get-changed-files
