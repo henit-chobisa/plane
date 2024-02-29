@@ -11,7 +11,7 @@ jobs:
     outputs:
       apiserver_changed: ${{ steps.changed-files.outputs.apiserver_any_changed }}
       web_changed: ${{ steps.changed-files.outputs.web_any_changed }}
-      space_changed: ${{ steps.changed-files.outputs.space_any_changed }}
+      space_changed: ${{ steps.changed-files.outputs.deploy_any_changed }}
     steps:
       - uses: actions/checkout@v3
       - name: Get changed files
