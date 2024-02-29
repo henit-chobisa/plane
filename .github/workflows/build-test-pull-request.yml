@@ -38,9 +38,10 @@ jobs:
           python-version: '3.x' # Specify the Python version you need
       - name: Install Pylint
         run: python -m pip install pylint
+      - name: Install Apiserver Dependencies
+        run: cd apiserver && pip install -r requirements.txt
       - name: Lint apiserver
-        run: pylint apiserver
-
+        run: pylint **/*.py
 
   lint-web:
     needs: get-changed-files
