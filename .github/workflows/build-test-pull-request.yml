@@ -23,8 +23,18 @@ jobs:
               - apiserver/**
             web:
               - web/**
+              - packages/**
+              - 'package.json'
+              - 'yarn.lock'
+              - 'tsconfig.json'
+              - 'turbo.json'
             deploy:
               - space/**
+              - packages/**
+              - 'package.json'
+              - 'yarn.lock'
+              - 'tsconfig.json'
+              - 'turbo.json'
 
   lint-apiserver:
     needs: get-changed-files
